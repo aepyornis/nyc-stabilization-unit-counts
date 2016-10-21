@@ -214,6 +214,10 @@ def search(borough=None, house_number=None, street=None, block=None, lot=None):
     strain_soup(bbl, soup, 'a[href^="../../"]', handle_double_dot)
     strain_soup(bbl, soup, 'a[href^="soalist.jsp"]', handle_soalist)
 
+
+def split_bbl(bbl):
+    return (bbl[0],bbl[1:6],bbl[6:])
+
 def main(*args):
     """
     Main function, called once for each BBL.
@@ -243,9 +247,18 @@ def main(*args):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        with open(sys.argv[1]) as infile:
-            for line in infile:
-                main(*line.strip().split('\t'))
+        # You can pass in a csv file with one bbl on each line:
+        #  - The bbl must be the first column -- any other columns will be ignored
+        #  - The bbl must be correctly formated: [borough 1 digit][block 5 digits][lot 4 digit]
+        if "csv" in sys.argv[1].split('.')[1].lower():
+            with open(sys.argv[1]) as infile:
+                for line in infile:
+                    main(*split_bbl(line.split(',')[0]))
+        else:
+            with open(sys.argv[1]) as infile:
+                for line in infile:
+                    main(*line.strip().split('\t'))
+
     elif len(sys.argv) == 4:
         main(sys.argv[1], sys.argv[2], sys.argv[3])
     else:
